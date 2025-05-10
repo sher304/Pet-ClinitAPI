@@ -1,57 +1,55 @@
 using AnimalClinicAPI.Model;
 using Microsoft.Data.SqlClient;
-    
+
 namespace AnimalClinicAPI.Service;
 
-public class DBService : DBInterface
+public class DBOwnerService : DBOwnerInterface
 {
     
     private readonly IConfiguration _configuration;
 
-    public DBService(IConfiguration configuration)
+    public DBOwnerService(IConfiguration configuration)
     {
         this._configuration = configuration;
     }
     
-    public async Task<List<Animal>> getAnimals()
+    public async Task<List<Owner>> getOwners()
     {
-        var animals = new List<Animal>();
+        List<Owner> owners = new List<Owner>();
         await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        await using SqlCommand command = new SqlCommand("SELECT * FROM Animal", connection);
+        await using SqlCommand command = new SqlCommand("Select * from Owner", connection);
         await connection.OpenAsync();
         
         var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            animals.Add(new Animal
+            owners.Add(new Owner
             {
-                Id = reader.GetInt32(0),
-                Name = reader.GetString(1),
-                Type = reader.GetString(2),
-                AdmissionDate = reader.GetDateTime(3),
-                ownerID = reader.GetInt32(4),
+                id = reader.GetInt32(0),
+                firstName = reader.GetString(1),
+                lastName = reader.GetString(2),
             });
         }
 
-        return animals;
+        return owners;
     }
 
-    public Task<Animal> getAnimal(int id)
+    public Task<Owner> getOwner(int id)
     {
         throw new NotImplementedException();
     }
 
-    public Task<bool> addAnimal(Animal animal)
+    public Task<bool> addOwner(Owner owner)
     {
         throw new NotImplementedException();
     }
 
-    public Task<bool> updateAnimal(Animal animal)
+    public Task<bool> updateOwner(Owner owner)
     {
         throw new NotImplementedException();
     }
 
-    public Task<bool> deleteAnimal(int id)
+    public Task<bool> deleteOwner(int id)
     {
         throw new NotImplementedException();
     }

@@ -79,3 +79,7 @@
 /Users/esherow/RiderProjects/AnimalClinicAPI/AnimalClinicAPI/obj/Debug/net9.0/AnimalClinicAPI.pdb
 /Users/esherow/RiderProjects/AnimalClinicAPI/AnimalClinicAPI/obj/Debug/net9.0/AnimalClinicAPI.genruntimeconfig.cache
 /Users/esherow/RiderProjects/AnimalClinicAPI/AnimalClinicAPI/obj/Debug/net9.0/ref/AnimalClinicAPI.dll
+/Users/esherow/RiderProjects/AnimalClinicAPI/AnimalClinicAPI/obj/Debug/net9.0/AnimalClinicAPI.sourcelink.json
+/Users/esherow/RiderProjects/AnimalClinicAPI/AnimalClinicAPI/bin/Debug/net9.0/Swashbuckle.AspNetCore.Swagger.dll
+/Users/esherow/RiderProjects/AnimalClinicAPI/AnimalClinicAPI/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/Users/esherow/RiderProjects/AnimalClinicAPI/AnimalClinicAPI/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll

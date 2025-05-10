@@ -1,3 +1,4 @@
+using AnimalClinicAPI.Model.DTO;
 using AnimalClinicAPI.Service;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -8,18 +9,24 @@ namespace AnimalClinicAPI.Controller;
 [Route("api/[controller]")]
 public class AnimalController : ControllerBase
 {
-    private readonly DBInterface _dbService;
+    private readonly DBAnimalInterface _dbAnimalService;
 
-    public AnimalController(DBInterface _dbService)
+    public AnimalController(DBAnimalInterface dbAnimalService)
     {
-        this._dbService = _dbService;
+        _dbAnimalService = dbAnimalService;
     }
-
 
     [HttpGet]
     public async Task<IActionResult> GetAnimals()
     {
-        var animals = await _dbService.getAnimals();
+        var animals = await _dbAnimalService.getAnimals();
         return Ok(animals);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> getAnimal(int id)
+    {
+        var animal = await _dbAnimalService.getAnimal(id);
+        return Ok(animal);
     }
 }
