@@ -1,7 +1,9 @@
+using System.Data.Common;
 using AnimalClinicAPI.Model;
 using AnimalClinicAPI.Model.DTO;
 using Microsoft.Data.SqlClient;
-    
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
 namespace AnimalClinicAPI.Service;
 
 public class DbAnimalAnimalService : DBAnimalInterface
@@ -30,13 +32,26 @@ public class DbAnimalAnimalService : DBAnimalInterface
                 Name = reader.GetString(1),
                 Type = reader.GetString(2),
                 AdmissionDate = reader.GetDateTime(3),
-                ownerID = reader.GetInt32(4),
+                OwnerId = reader.GetInt32(4),
             });
         }
 
         return animals;
     }
 
+    public async Task<bool> animalExists(int id)
+    {
+        await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await using SqlCommand command = new SqlCommand("SELECT count(*) FROM Animal WHERE Id = @id", connection);
+        command.Connection = connection;
+        connection.Open();
+        command.Parameters.AddWithValue("@id", id);
+
+        var res = await command.ExecuteScalarAsync();
+        if (res.Equals(0)) return false;
+        else return true;
+    }
+    
     public async Task<AnimalDTO> getAnimal(int id)
     {
         await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
@@ -84,13 +99,37 @@ public class DbAnimalAnimalService : DBAnimalInterface
             }
         }
 
-        if (animalDto == null) throw new Exception();
+        if (animalDto is null) throw new Exception();
         return animalDto;
     }
 
-    public Task<bool> addAnimal(Animal animal)
+    public async Task<bool> addAnimal(Animal animal)
     {
-        throw new NotImplementedException();
+        await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await using SqlCommand command = new SqlCommand("INSERT INTO Animal (Name, Type, AdmissionDate, Owner_ID) VALUES (@Name, @Type, @AdmissionDate, @Owner_ID);", connection);
+        command.Connection = connection;
+        await connection.OpenAsync();
+
+        DbTransaction transaction = connection.BeginTransaction();
+        command.Transaction = transaction as SqlTransaction;
+
+        try
+        {
+            command.Parameters.AddWithValue("@Name", animal.Name);
+            command.Parameters.AddWithValue("@Type", animal.Type);
+            command.Parameters.AddWithValue("@AdmissionDate", animal.AdmissionDate);
+            command.Parameters.AddWithValue("@Owner_ID", animal.OwnerId);
+
+            int result = await command.ExecuteNonQueryAsync();
+            await transaction.CommitAsync();
+            return result > 0;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            transaction.Rollback();
+            throw e;
+        }
     }
 
     public Task<bool> updateAnimal(Animal animal)
@@ -98,7 +137,31 @@ public class DbAnimalAnimalService : DBAnimalInterface
         throw new NotImplementedException();
     }
 
-    public Task<bool> deleteAnimal(int id)
+    public async Task<bool> deleteAnimal(int id)
+    {
+        await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await using SqlCommand command = new SqlCommand("delete from animal where id = @id", connection);
+        connection.Open();
+        
+        DbTransaction transaction = connection.BeginTransaction();
+        command.Transaction = transaction as SqlTransaction;
+
+        try
+        {
+            command.Parameters.AddWithValue("@id", id);
+            int result = await command.ExecuteNonQueryAsync();
+            await transaction.CommitAsync();
+            return result > 0;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            transaction.Rollback();
+            throw e;
+        }
+    }
+
+    public Task<bool> addAnimalWithProcedure(AnimalPostDTO animalPostDto)
     {
         throw new NotImplementedException();
     }

@@ -1,3 +1,5 @@
+using System.Transactions;
+using AnimalClinicAPI.Model;
 using AnimalClinicAPI.Model.DTO;
 using AnimalClinicAPI.Service;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -6,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AnimalClinicAPI.Controller;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/animals")]
 public class AnimalController : ControllerBase
 {
     private readonly DBAnimalInterface _dbAnimalService;
@@ -26,7 +28,60 @@ public class AnimalController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> getAnimal(int id)
     {
-        var animal = await _dbAnimalService.getAnimal(id);
-        return Ok(animal);
+        if (await _dbAnimalService.animalExists(id) == false)
+        {
+            return NotFound($"No animal found with id {id}");
+        } 
+        
+        try
+        {
+            var animal = await _dbAnimalService.getAnimal(id);
+            return Ok(animal);
+        } catch (Exception e)
+        {
+         return NotFound("No data with this animal request id: " + id);
+        }
+    }
+
+    [HttpPost]
+    [Route("api/animals_procedure")]
+    public async Task<IActionResult> PostAnimal([FromBody] AnimalPostDTO animal)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState); 
+        }
+        
+        _dbAnimalService.addAnimalWithProcedure(animal);
+        Console.WriteLine($"Animal name: {animal.name} Animal type: {animal.type}");
+        
+        return Created(Request.Path.Value ?? "api/animals", animal);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> PostAnimals([FromBody] Animal animal)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        var result = await _dbAnimalService.addAnimal(animal);
+        if (result.Equals(true)) return Created(Request.Path.Value ?? "api/animals", animal);
+        else return BadRequest("Error while trying to create animals");
+    }
+
+    [HttpDelete]
+    [Route("{id}")]
+    public async Task<IActionResult> DeleteAnimal(int id)
+    {
+        var isAnimalExists = await _dbAnimalService.animalExists(id);
+        if (isAnimalExists == false)
+        {
+            return NotFound($"No animal found with id {id}");
+        }
+        
+        var result = await _dbAnimalService.deleteAnimal(id);
+        if (result.Equals(true)) return Ok("Animal has been deleted!");
+        else return BadRequest("Error while trying to delete animal");
     }
 }
