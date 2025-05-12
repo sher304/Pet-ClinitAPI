@@ -7,9 +7,9 @@ public interface DBAnimalInterface
 {
     Task<List<Animal>> getAnimals();
     Task<AnimalDTO> getAnimal(int id);
-    Task<bool> addAnimal(Animal animal);
+    Task<int> addAnimal(Animal animal);
     Task<bool> updateAnimal(Animal animal);
     Task<bool> deleteAnimal(int id);
     Task<bool> animalExists(int id);
-    Task<bool> addAnimalWithProcedure(AnimalPostDTO animalPostDto);
+    Task<bool> addAnimalWithProcedure(int animalId, ProcedurePostDTO procedurePostDto);
 }

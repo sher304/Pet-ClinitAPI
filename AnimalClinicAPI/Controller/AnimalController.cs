@@ -44,21 +44,6 @@ public class AnimalController : ControllerBase
     }
 
     [HttpPost]
-    [Route("api/animals_procedure")]
-    public async Task<IActionResult> PostAnimal([FromBody] AnimalPostDTO animal)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState); 
-        }
-        
-        _dbAnimalService.addAnimalWithProcedure(animal);
-        Console.WriteLine($"Animal name: {animal.name} Animal type: {animal.type}");
-        
-        return Created(Request.Path.Value ?? "api/animals", animal);
-    }
-
-    [HttpPost]
     public async Task<IActionResult> PostAnimals([FromBody] Animal animal)
     {
         if (!ModelState.IsValid)
@@ -83,5 +68,33 @@ public class AnimalController : ControllerBase
         var result = await _dbAnimalService.deleteAnimal(id);
         if (result.Equals(true)) return Ok("Animal has been deleted!");
         else return BadRequest("Error while trying to delete animal");
+    }
+
+    [HttpPost]
+    [Route("animals_procedure")]
+    public async Task<IActionResult> PostWithProcedure([FromBody] AnimalPostDTO animal)
+    {
+        
+        if (!ModelState.IsValid)
+        {
+            return BadRequest("Incorrect model!");
+        }
+        
+        using (TransactionScope scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        {
+            int animalID = await _dbAnimalService.addAnimal(new Animal
+            {
+                AdmissionDate = animal.admissionDate,
+                Name = animal.name,
+                Type = animal.type,
+                OwnerId = animal.ownerId
+            });
+            foreach (var precedure in animal.procedures)
+            {
+                await _dbAnimalService.addAnimalWithProcedure(animalID, precedure);
+            }
+            scope.Complete();
+        }
+        return Created(Request.Path.Value ?? "api/animals", animal);
     }
 }

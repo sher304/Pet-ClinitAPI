@@ -103,10 +103,10 @@ public class DbAnimalAnimalService : DBAnimalInterface
         return animalDto;
     }
 
-    public async Task<bool> addAnimal(Animal animal)
+    public async Task<int> addAnimal(Animal animal)
     {
         await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        await using SqlCommand command = new SqlCommand("INSERT INTO Animal (Name, Type, AdmissionDate, Owner_ID) VALUES (@Name, @Type, @AdmissionDate, @Owner_ID);", connection);
+        await using SqlCommand command = new SqlCommand("INSERT INTO Animal (Name, Type, AdmissionDate, Owner_ID) VALUES (@Name, @Type, @AdmissionDate, @Owner_ID); select @@IDENTITY as ID", connection);
         command.Connection = connection;
         await connection.OpenAsync();
 
@@ -120,9 +120,10 @@ public class DbAnimalAnimalService : DBAnimalInterface
             command.Parameters.AddWithValue("@AdmissionDate", animal.AdmissionDate);
             command.Parameters.AddWithValue("@Owner_ID", animal.OwnerId);
 
-            int result = await command.ExecuteNonQueryAsync();
+            var result = await command.ExecuteScalarAsync();
+            if (result is null) throw new Exception("Error while adding animal!");
             await transaction.CommitAsync();
-            return result > 0;
+            return Convert.ToInt32(result);
         }
         catch (Exception e)
         {
@@ -161,8 +162,27 @@ public class DbAnimalAnimalService : DBAnimalInterface
         }
     }
 
-    public Task<bool> addAnimalWithProcedure(AnimalPostDTO animalPostDto)
+    public async Task<bool> addAnimalWithProcedure(int animalId, ProcedurePostDTO procedurePostDto)
     {
-        throw new NotImplementedException();
+        await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await using SqlCommand command =
+            new SqlCommand(
+                "insert into [Procedure_Animal] (Procedure_ID, Animal_ID, date) values (@Procedure_ID, @Animal_ID, @Date)", connection);
+
+        connection.Open();
+
+        try
+        {
+            command.Parameters.AddWithValue("@Procedure_ID", procedurePostDto.procedureId);
+            command.Parameters.AddWithValue("@Animal_ID", animalId);
+            command.Parameters.AddWithValue("@Date", procedurePostDto.date);
+            int result = await command.ExecuteNonQueryAsync();
+            return result > 0;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }
