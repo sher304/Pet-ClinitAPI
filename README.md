@@ -1,7 +1,3 @@
-Certainly! Based on the information available from the [Pet-ClinitAPI repository](https://github.com/sher304/Pet-ClinitAPI), here's a suggested `README.md` file to enhance your project's documentation:
-
----
-
 # 🐾 Pet Clinic API
 
 A RESTful API built with ASP.NET Core for managing a veterinary clinic system. This API allows for the management of animals, their owners, and associated medical procedures.
@@ -132,10 +128,3 @@ When adding a new animal with associated procedures:
 * **SQL Server**
 * **C#**
 
-## 📄 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-Feel free to customize this `README.md` further to match the specific details and requirements of your project.
